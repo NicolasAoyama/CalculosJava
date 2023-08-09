@@ -1,63 +1,35 @@
 package exercicio5.demo.Controller;
 
-import Fozesc.com.demo.Entity.Pessoa;
+import exercicio5.demo.Entity.Numeros;
+import exercicio5.demo.Service.NumerosService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
-
-@Controller
+@RestController
 @RequestMapping(value = "/api/conta")
-public class PessoaController {
+public class NumeroController {
 
     @Autowired
-    private Numerository Repository;
-    @Autowired
-    private NumeroService Service;
-
-    @GetMapping("/lista")
-    public ResponseEntity<List<Pessoa>> lista(){
-        List<Pessoa> listartudo = Service.listartudo();
-        return ResponseEntity.ok(listartudo);
-    }
+    private NumerosService numerosService;
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<?> cadastrar(@RequestBody Pessoa cadastro){
-        try{
-            this.Service.cadastrar(cadastro);
-            return ResponseEntity.ok("Cadastro feito com sucesso");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.badRequest().body("ERRO:"+e.getMessage());
-        }catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("ERRO: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id){
-        Optional<Pessoa> deletarId = Repository.findById(id);
-        if (deletarId.isPresent()) {
-            Repository.deleteById(id);
-            return ResponseEntity.ok("Apagado com sucesso");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-    @PutMapping("/put/id/{id}")
-    public ResponseEntity<?> atualizar( @PathVariable Long id, @RequestBody Pessoa atualizarId) {
+    public ResponseEntity<String> cadastrar(@RequestBody Numeros numeros) {
         try {
-            this.Service.atualizar(id, atualizarId);
-            return ResponseEntity.ok().body(" atualizado com sucesso!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            numerosService.cadastrar(numeros.getNum());
+            return ResponseEntity.ok("Números cadastrados com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao cadastrar números: " + e.getMessage());
         }
     }
 
-
+    @GetMapping("/estatisticas")
+    public ResponseEntity<String> calcularEstatisticas() {
+        try {
+            String estatisticas = numerosService.calcularEstatisticas();
+            return ResponseEntity.ok(estatisticas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao calcular estatísticas: " + e.getMessage());
+        }
+    }
 }
